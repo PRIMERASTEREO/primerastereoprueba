@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Primera Stereo - Radio Video Online</title>
+  <title>Primera Stereo - Radio Video--Online</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
@@ -36,35 +36,24 @@
 
   <div class="max-w-lg w-full mx-auto">
 
-    <!-- Header -->
     <div class="flex items-center justify-center gap-4 mb-8">
-      <img src="https://primerastereo.netlify.app/favicon.png" 
-           alt="Logo" class="w-20 h-20 object-contain rounded-3xl shadow-xl">
+      <img src="https://primerastereo.netlify.app/favicon.png" alt="Logo" class="w-20 h-20 object-contain rounded-3xl shadow-xl">
       <div>
         <h1 class="text-5xl font-bold tracking-tighter text-white">PRIMERA STEREO</h1>
         <p class="text-blue-400 text-xl text-center -mt-1">RADIO VIDEO ONLINE</p>
       </div>
     </div>
 
-    <!-- Reproductor -->
     <div class="glass rounded-3xl p-8 shadow-2xl">
+      <div class="media-container" id="media-container"></div>
 
-      <!-- Media Container (Video o Logo) -->
-      <div class="mb-6">
-        <div id="media-container" class="media-container">
-          <!-- Se llenará dinámicamente -->
-        </div>
-      </div>
-
-      <!-- Info -->
-      <div class="text-center mb-6">
+      <div class="text-center mt-6 mb-8">
         <p class="uppercase tracking-widest text-emerald-400 text-sm font-medium">● EN VIVO</p>
         <h2 id="song-title" class="text-2xl font-bold text-white">Cargando canción...</h2>
         <p id="artist" class="text-gray-300 text-lg">Primera Stereo</p>
       </div>
 
-      <!-- Botón -->
-      <div class="flex justify-center mb-6">
+      <div class="flex justify-center">
         <button onclick="togglePlay()" id="play-btn"
           class="w-28 h-28 bg-gradient-to-br from-blue-600 via-purple-600 to-violet-600 rounded-full flex items-center justify-center text-6xl shadow-2xl active:scale-95">
           <i class="fas fa-play" id="play-icon"></i>
@@ -79,7 +68,6 @@
     </footer>
   </div>
 
-  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     const audio = document.getElementById('audio-player');
     const mediaContainer = document.getElementById('media-container');
@@ -88,24 +76,12 @@
     const playIcon = document.getElementById('play-icon');
 
     let isPlaying = false;
-    let player = null;
     let lastTitle = "";
 
     audio.src = "https://primerastereo.stream.laut.fm/primerastereo";
 
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('yt-player', {
-        height: '100%',
-        width: '100%',
-        playerVars: { 'autoplay': 0, 'mute': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 }
-      });
-    }
-
     function showLogo() {
-      mediaContainer.innerHTML = `
-        <img src="https://primerastereo.netlify.app/favicon.png" 
-             style="width:100%; height:100%; object-fit:contain; background:#1a0033;" alt="Primera Stereo">
-      `;
+      mediaContainer.innerHTML = `<img src="https://primerastereo.netlify.app/favicon.png" style="width:100%; height:100%; object-fit:contain;">`;
     }
 
     async function updateMetadata() {
@@ -119,51 +95,35 @@
         songTitle.textContent = title;
         artistEl.textContent = artist;
 
-        // Solo actuar si cambió la canción
         if (title === lastTitle) return;
         lastTitle = title;
 
-        if (player) player.stopVideo();
-
-        // Si es jingle de la radio
+        // Si es jingle → logo
         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
           showLogo();
           return;
         }
 
-        // Buscar portada
-        let coverUrl = "https://primerastereo.netlify.app/favicon.png";
-        try {
-          const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
-          const iData = await itunes.json();
-          if (iData.results && iData.results.length > 0) {
-            coverUrl = iData.results[0].artworkUrl100.replace('100x100', '600x600');
-          }
-        } catch(e){}
-
-        // === MÉTODO "SUCIO" QUE SÍ TE FUNCIONA ===
+        // Método proxy que usabas tú
         const query = encodeURIComponent(artist + " " + title + " official video");
+        
         fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
         .then(r => r.text())
         .then(html => {
-          const idMatch = html.match(/"videoId":"([^"]+)"/);
-          if (idMatch && idMatch[1] && player) {
-            // Cargar el video
+          const match = html.match(/"videoId":"([^"]+)"/);
+          if (match && match[1]) {
             mediaContainer.innerHTML = `
               <iframe width="100%" height="100%" 
-                      src="https://www.youtube.com/embed/${idMatch[1]}?autoplay=1&mute=1&modestbranding=1&rel=0" 
+                      src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&modestbranding=1&rel=0" 
                       frameborder="0" allowfullscreen></iframe>
             `;
           } else {
             showLogo();
           }
         })
-        .catch(() => {
-          showLogo();
-        });
+        .catch(() => showLogo());
 
       } catch (e) {
-        console.error(e);
         showLogo();
       }
     }
@@ -181,12 +141,13 @@
       }
     }
 
-    // Actualizar cada 10 segundos solo si está reproduciendo
     setInterval(() => {
       if (isPlaying) updateMetadata();
     }, 10000);
 
-    window.onload = () => updateMetadata();
+    window.onload = () => {
+      updateMetadata();
+    };
   </script>
 </body>
 </html>
