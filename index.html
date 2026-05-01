@@ -22,14 +22,13 @@
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.15);
     }
-    .cover {
+    .media-container {
       width: 100%;
-      max-height: 320px;
-      object-fit: contain;
+      aspect-ratio: 1 / 1;
+      background: #000;
       border-radius: 20px;
+      overflow: hidden;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-      transition: all 0.7s ease-in-out;
-      background: #1a0033;
     }
   </style>
 </head>
@@ -52,10 +51,10 @@
     <!-- Reproductor -->
     <div class="glass rounded-3xl p-8 shadow-2xl">
 
-      <!-- Área de Media (Video o Portada) -->
+      <!-- Área de Media (Video o Carátula) -->
       <div class="mb-6">
-        <div id="media-container" class="media-container" style="width:100%; aspect-ratio: 1 / 1; background:#000; border-radius:20px; overflow:hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.7);">
-          <img id="album-art" src="https://primerastereo.netlify.app/favicon.png" alt="Portada" style="width:100%; height:100%; object-fit:contain;">
+        <div id="media-container" class="media-container">
+          <!-- Se llenará dinámicamente con video o carátula -->
         </div>
       </div>
 
@@ -64,11 +63,6 @@
         <p class="uppercase tracking-widest text-green-500 text-sm font-medium">● EN VIVO</p>
         <h2 id="song-title" class="text-2xl text-white">Cargando canción...</h2>
         <p id="artist" class="text-green-500 text-lg">Primera Stereo</p>
-      </div>
-
-      <!-- Visualizador -->
-      <div class="mb-8 bg-black/50 rounded-2xl p-4">
-        <canvas id="visualizer" width="700" height="85" class="w-full"></canvas>
       </div>
 
       <!-- Botón Play/Pause -->
@@ -83,7 +77,7 @@
       <audio id="audio-player" class="hidden" crossorigin="anonymous"></audio>
     </div>
 
-    <!-- Redes Sociales y Footer -->
+    <!-- Redes Sociales -->
     <div class="flex justify-center gap-8 mt-10 text-4xl text-gray-100">
       <a href="https://www.facebook.com/PrimeraStereoRadio" target="_blank" class="hover:text-blue-600 transition"><i class="fab fa-facebook"></i></a>
       <a href="https://www.instagram.com/Primera.Stereo/" target="_blank" class="hover:text-pink-600 transition"><i class="fab fa-instagram"></i></a>
@@ -102,13 +96,11 @@
     const audio = document.getElementById('audio-player');
     const playBtn = document.getElementById('play-btn');
     const playIcon = document.getElementById('play-icon');
-    const canvas = document.getElementById('visualizer');
-    const ctx = canvas.getContext('2d');
     const mediaContainer = document.getElementById('media-container');
 
     let isPlaying = false;
     let player = null;
-    let lastTitle = "";
+    let lastSongTitle = "";
 
     audio.src = "https://primerastereo.stream.laut.fm/primerastereo";
     const metadataUrl = "https://api.laut.fm/station/primerastereo/current_song";
@@ -130,7 +122,8 @@
 
     function showCover(coverUrl) {
       mediaContainer.innerHTML = `
-        <img src="${coverUrl}" alt="Portada" style="width:100%; height:100%; object-fit:contain; background:#1a0033;">
+        <img src="${coverUrl || 'https://primerastereo.netlify.app/favicon.png'}" 
+             alt="Portada" style="width:100%; height:100%; object-fit:contain; background:#1a0033;">
       `;
     }
 
@@ -146,27 +139,29 @@
         document.getElementById('artist').textContent = artist;
 
         // Solo actualizar si cambió la canción
-        if (title === lastTitle) return;
-        lastTitle = title;
+        if (title === lastSongTitle) return;
+        lastSongTitle = title;
 
         // Reset video
         if (player && player.stopVideo) player.stopVideo();
 
-        // Si es jingle de la radio
+        // Si es jingle de la radio → mostrar logo
         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
           showCover("https://primerastereo.netlify.app/favicon.png");
           return;
         }
 
-        // Buscar portada
-        const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
-        const itunesData = await itunesRes.json();
+        // Buscar portada con iTunes
         let coverUrl = "https://primerastereo.netlify.app/favicon.png";
-        if (itunesData.results && itunesData.results.length > 0) {
-          coverUrl = itunesData.results[0].artworkUrl100.replace('100x100', '600x600');
-        }
+        try {
+          const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
+          const itunesData = await itunesRes.json();
+          if (itunesData.results && itunesData.results.length > 0) {
+            coverUrl = itunesData.results[0].artworkUrl100.replace('100x100', '600x600');
+          }
+        } catch (e) {}
 
-        // Intentar cargar video usando tu método (proxy)
+        // Intentar cargar video (método más estable posible sin API Key funcional)
         const query = encodeURIComponent(artist + " " + title + " official video");
         fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
         .then(r => r.text())
@@ -180,24 +175,32 @@
                         src="https://www.youtube.com/embed/${idMatch[1]}?autoplay=1&mute=1&modestbranding=1&rel=0" 
                         frameborder="0" allowfullscreen></iframe>
               `;
-            }, 800);
+            }, 1500); // Esperamos un poco para que cargue el player
           } else {
             showCover(coverUrl);
           }
         })
-        .catch(() => showCover(coverUrl));
+        .catch(() => {
+          showCover(coverUrl);
+        });
 
       } catch (e) {
         console.error(e);
+        showCover("https://primerastereo.netlify.app/favicon.png");
       }
     }
 
     async function togglePlay() {
       if (!isPlaying) {
-        await audio.play();
-        isPlaying = true;
-        playIcon.classList.replace('fa-play', 'fa-pause');
-        updateMetadata();
+        try {
+          await audio.play();
+          isPlaying = true;
+          playIcon.classList.replace('fa-play', 'fa-pause');
+          updateMetadata();
+        } catch (err) {
+          console.error(err);
+          alert("No se pudo reproducir el audio.");
+        }
       } else {
         audio.pause();
         isPlaying = false;
@@ -205,7 +208,7 @@
       }
     }
 
-    // Actualizar solo cuando está reproduciendo
+    // Actualizar metadatos cada 10 segundos solo si está reproduciendo
     setInterval(() => {
       if (isPlaying) updateMetadata();
     }, 10000);
