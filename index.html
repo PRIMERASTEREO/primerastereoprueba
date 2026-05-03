@@ -14,14 +14,29 @@
       display: flex;
       flex-direction: column;
       margin: 0;
-      overflow: hidden; /* Evita el scroll */
+      overflow: hidden;
     }
     .glass {
       background: rgba(255, 255, 255, 0.07);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    /* Contenedor del video con recorte de bordes */
+    /* Marquesina optimizada */
+    .marquee-container {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+    .marquee-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: marquee 12s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
     .media-container {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -30,24 +45,48 @@
       overflow: hidden;
       position: relative;
     }
-    /* Zoom para ocultar controles de YouTube y llenar espacios */
     iframe {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 130%; /* Aumentado para eliminar bordes */
-      height: 130%; /* Aumentado para eliminar bordes */
-      transform: translate(-50%, -50%) scale(1.1);
+      top: 50%; left: 50%;
+      width: 135%; height: 135%;
+      transform: translate(-50%, -50%) scale(1.15);
       pointer-events: none;
     }
     #ad-banner { transition: opacity 0.8s ease-in-out; height: 50px; object-fit: contain; width: 100%; }
+    
+    /* Estilos Menu Lateral */
+    #sidebar {
+      position: fixed;
+      top: 0; left: -250px;
+      width: 250px; height: 100%;
+      background: rgba(15, 10, 31, 0.95);
+      z-index: 50;
+      transition: 0.3s;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    #sidebar.active { left: 0; }
   </style>
 </head>
-<body class="p-2 sm:p-4">
+<body class="p-2">
 
-  <div class="flex-1 flex flex-col max-w-lg w-full mx-auto justify-between">
+  <!-- Botón Menú Lateral (Círculo Rojo) -->
+  <button onclick="toggleSidebar()" class="fixed top-4 left-4 z-[60] text-white text-2xl">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="p-6 pt-16 shadow-2xl">
+    <nav class="flex flex-col gap-6 text-white text-lg">
+      <a href="#" class="hover:text-blue-400"><i class="fas fa-home mr-3"></i>Inicio</a>
+      <a href="https://primerastereo.netlify.app" target="_blank" class="hover:text-blue-400"><i class="fas fa-globe mr-3"></i>Web Oficial</a>
+      <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank" class="hover:text-green-400"><i class="fab fa-whatsapp mr-3"></i>Contacto</a>
+      <hr class="opacity-20">
+      <p class="text-xs text-gray-400">PRIMERA STEREO v2.0</p>
+    </nav>
+  </div>
+
+  <div class="flex-1 flex flex-col max-w-lg w-full mx-auto justify-between pt-2">
     
-    <!-- Header más pequeño -->
     <div class="flex items-center justify-center gap-2 mb-2">
       <img src="https://primerastereo.netlify.app/favicon.png" alt="Logo" class="w-10 h-10 object-contain rounded-lg">
       <div>
@@ -56,30 +95,31 @@
       </div>
     </div>
 
-    <!-- Bloque central ajustado para no requerir F11 -->
-    <div class="glass rounded-2xl p-4 shadow-2xl flex-1 flex flex-col justify-around mb-3">
+    <div class="glass rounded-2xl p-4 shadow-2xl flex-1 flex flex-col justify-around mb-2">
       <div class="media-container" id="media-container">
-        <img src="https://primerastereo.netlify.app/favicon.png" style="width:100%; height:100%; object-fit:contain; padding: 15px;">
+        <img src="https://primerastereo.netlify.app/favicon.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">
       </div>
 
       <div class="text-center mt-2">
-        <p class="uppercase tracking-widest text-emerald-400 text-[9px] font-bold">● EN VIVO</p>
-        <h2 id="song-title" class="text-lg font-bold text-white truncate px-2 leading-tight">Primera Stereo</h2>
-        <p id="artist" class="text-gray-300 text-xs">Cargando...</p>
+        <p class="uppercase tracking-widest text-emerald-400 text-[9px] font-bold mb-1">● EN VIVO</p>
+        <div class="marquee-container">
+          <h2 id="song-title" class="marquee-text text-lg font-bold text-white">Primera Stereo</h2>
+        </div>
+        <p id="artist" class="text-gray-300 text-xs">Cargando señal...</p>
       </div>
 
+      <!-- Botón Play Reducido (Circulo Amarillo) -->
       <div class="flex justify-center mt-2">
         <button onclick="togglePlay()" id="play-btn"
-          class="w-16 h-16 bg-gradient-to-br from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-3xl shadow-xl active:scale-90 text-white">
+          class="w-14 h-14 bg-gradient-to-br from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-2xl shadow-xl active:scale-90 text-white">
           <i class="fas fa-play" id="play-icon"></i>
         </button>
       </div>
     </div>
 
-    <!-- Banners -->
     <div class="text-center mb-1">
       <p class="text-[8px] text-blue-400 font-bold tracking-widest mb-1">NUESTROS PATROCINANTES</p>
-      <a id="ad-link" href="#" target="_blank" class="block glass rounded-lg p-1">
+      <a id="ad-link" href="#" target="_blank" class="block glass rounded-lg p-1 overflow-hidden">
         <img id="ad-banner" src="https://primerastereo.netlify.app/disponible2.jpg">
       </a>
     </div>
@@ -101,6 +141,10 @@
     let isPlaying = false;
     let lastTitle = "";
     const streamUrl = "https://primerastereo.stream.laut.fm/primerastereo";
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
 
     const banners = [
       { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429" },
@@ -124,7 +168,7 @@
     }
 
     function showLogo() {
-      mediaContainer.innerHTML = `<img src="https://primerastereo.netlify.app/favicon.png" style="width:100%; height:100%; object-fit:contain; padding: 15px;">`;
+      mediaContainer.innerHTML = `<img src="https://primerastereo.netlify.app/favicon.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">`;
     }
 
     async function updateMetadata() {
@@ -137,7 +181,12 @@
         if (title === lastTitle) return;
         lastTitle = title;
 
+        // Reset Marquee
+        songTitle.classList.remove('marquee-text');
+        void songTitle.offsetWidth; // Trigger reflow
         songTitle.textContent = title;
+        if(title.length > 20) songTitle.classList.add('marquee-text');
+        
         artistEl.textContent = artist;
 
         const isJingle = artist.toUpperCase().includes("PRIMERA STEREO") || 
@@ -148,12 +197,14 @@
           showLogo();
         } else {
           const query = encodeURIComponent(artist + " " + title + " official video");
+          // Proxy para buscar el video
           fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
           .then(r => r.text())
           .then(html => {
             const match = html.match(/"videoId":"([^"]+)"/);
             if (match && match[1]) {
-              mediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+              // Cargamos el video y si falla (error de copyright/bloqueo), mostramos logo
+              mediaContainer.innerHTML = `<iframe id="yt-player" src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&showinfo=0&rel=0" frameborder="0" allow="autoplay"></iframe>`;
             } else { showLogo(); }
           }).catch(() => showLogo());
         }
