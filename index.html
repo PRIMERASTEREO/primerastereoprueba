@@ -11,69 +11,80 @@
       background: linear-gradient(135deg, #0f0a1f, #1a0033);
       font-family: system-ui, -apple-system, sans-serif;
       height: 100vh;
-      height: 100dvh;
       display: flex;
       flex-direction: column;
       margin: 0;
-      overflow: hidden;
+      overflow: hidden; /* Evita el scroll */
     }
     .glass {
       background: rgba(255, 255, 255, 0.07);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
+    /* Contenedor del video con recorte de bordes */
     .media-container {
       width: 100%;
       aspect-ratio: 16 / 9;
       background: #000;
-      border-radius: 15px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       position: relative;
     }
-    #ad-banner { transition: opacity 0.8s ease-in-out; height: 60px; object-fit: contain; width: 100%; }
-    iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    /* Zoom para ocultar controles de YouTube y llenar espacios */
+    iframe {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 130%; /* Aumentado para eliminar bordes */
+      height: 130%; /* Aumentado para eliminar bordes */
+      transform: translate(-50%, -50%) scale(1.1);
+      pointer-events: none;
+    }
+    #ad-banner { transition: opacity 0.8s ease-in-out; height: 50px; object-fit: contain; width: 100%; }
   </style>
 </head>
-<body class="p-4">
+<body class="p-2 sm:p-4">
 
   <div class="flex-1 flex flex-col max-w-lg w-full mx-auto justify-between">
     
-    <div class="flex items-center justify-center gap-3 mb-4">
-      <img src="https://primerastereo.netlify.app/favicon.png" alt="Logo" class="w-12 h-12 object-contain rounded-xl shadow-lg">
+    <!-- Header más pequeño -->
+    <div class="flex items-center justify-center gap-2 mb-2">
+      <img src="https://primerastereo.netlify.app/favicon.png" alt="Logo" class="w-10 h-10 object-contain rounded-lg">
       <div>
-        <h1 class="text-2xl font-bold tracking-tighter text-white">PRIMERA STEREO</h1>
-        <p class="text-blue-400 text-xs text-center -mt-1 uppercase tracking-widest">Radio Video Online</p>
+        <h1 class="text-xl font-bold tracking-tighter text-white">PRIMERA STEREO</h1>
+        <p class="text-blue-400 text-[10px] text-center -mt-1 uppercase tracking-widest">Radio Video Online</p>
       </div>
     </div>
 
-    <div class="glass rounded-3xl p-5 shadow-2xl flex-1 flex flex-col justify-around mb-4">
+    <!-- Bloque central ajustado para no requerir F11 -->
+    <div class="glass rounded-2xl p-4 shadow-2xl flex-1 flex flex-col justify-around mb-3">
       <div class="media-container" id="media-container">
-        <img src="https://primerastereo.netlify.app/favicon.png" id="main-logo" style="width:100%; height:100%; object-fit:contain; padding: 20px;">
+        <img src="https://primerastereo.netlify.app/favicon.png" style="width:100%; height:100%; object-fit:contain; padding: 15px;">
       </div>
 
-      <div class="text-center mt-4">
-        <p class="uppercase tracking-widest text-emerald-400 text-[10px] font-bold mb-1">● EN VIVO</p>
-        <h2 id="song-title" class="text-xl font-bold text-white truncate px-2">Primera Stereo</h2>
-        <p id="artist" class="text-gray-300 text-sm">Cargando señal...</p>
+      <div class="text-center mt-2">
+        <p class="uppercase tracking-widest text-emerald-400 text-[9px] font-bold">● EN VIVO</p>
+        <h2 id="song-title" class="text-lg font-bold text-white truncate px-2 leading-tight">Primera Stereo</h2>
+        <p id="artist" class="text-gray-300 text-xs">Cargando...</p>
       </div>
 
-      <div class="flex justify-center mt-4">
+      <div class="flex justify-center mt-2">
         <button onclick="togglePlay()" id="play-btn"
-          class="w-20 h-20 bg-gradient-to-br from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-4xl shadow-2xl active:scale-90 transition-transform text-white">
+          class="w-16 h-16 bg-gradient-to-br from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-3xl shadow-xl active:scale-90 text-white">
           <i class="fas fa-play" id="play-icon"></i>
         </button>
       </div>
     </div>
 
-    <div class="text-center mb-2">
-      <p class="text-[9px] text-blue-400 font-bold tracking-widest mb-1">NUESTROS PATROCINANTES</p>
-      <a id="ad-link" href="#" target="_blank" class="block glass rounded-xl p-1 overflow-hidden">
+    <!-- Banners -->
+    <div class="text-center mb-1">
+      <p class="text-[8px] text-blue-400 font-bold tracking-widest mb-1">NUESTROS PATROCINANTES</p>
+      <a id="ad-link" href="#" target="_blank" class="block glass rounded-lg p-1">
         <img id="ad-banner" src="https://primerastereo.netlify.app/disponible2.jpg">
       </a>
     </div>
 
-    <footer class="text-center text-gray-500 text-[10px] py-2">
+    <footer class="text-center text-gray-500 text-[9px] py-1">
       © 2010 - 2026 PRIMERA STEREO 📻 RADIO VIDEO ONLINE
     </footer>
   </div>
@@ -102,6 +113,7 @@
 
     function rotateBanners() {
       const bImg = document.getElementById('ad-banner');
+      if(!bImg) return;
       bImg.style.opacity = 0;
       setTimeout(() => {
         bImg.src = banners[bIdx].img;
@@ -112,7 +124,7 @@
     }
 
     function showLogo() {
-      mediaContainer.innerHTML = `<img src="https://primerastereo.netlify.app/favicon.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">`;
+      mediaContainer.innerHTML = `<img src="https://primerastereo.netlify.app/favicon.png" style="width:100%; height:100%; object-fit:contain; padding: 15px;">`;
     }
 
     async function updateMetadata() {
@@ -136,14 +148,12 @@
           showLogo();
         } else {
           const query = encodeURIComponent(artist + " " + title + " official video");
-          const ytUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`;
-          
-          fetch(ytUrl)
+          fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
           .then(r => r.text())
           .then(html => {
             const match = html.match(/"videoId":"([^"]+)"/);
             if (match && match[1]) {
-              mediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&showinfo=0&rel=0" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+              mediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
             } else { showLogo(); }
           }).catch(() => showLogo());
         }
@@ -157,7 +167,7 @@
           isPlaying = true;
           playIcon.classList.replace('fa-play', 'fa-pause');
           updateMetadata();
-        }).catch(err => console.error("Error de reproducción:", err));
+        });
       } else {
         audio.pause();
         isPlaying = false;
