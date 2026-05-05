@@ -145,7 +145,7 @@
       </div>
 
       <div class="text-center mt-2">
-        <p class="uppercase tracking-widest text-orange-400 text-[9px] font-bold mb-1">● EN VIVO</p>
+        <p class="uppercase tracking-widest text-orange-400 text-[10px] font-bold mb-1">● EN VIVO</p>
         <div class="marquee-container">
           <h2 id="song-title" class="text-lg font-bold text-white">Iniciando...</h2>
         </div>
@@ -227,6 +227,23 @@
       mediaContainer.innerHTML = `<img src="https://primera-stereo.netlify.app/PSRO5-5.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">`;
     }
 
+    // Nueva función para mostrar la carátula oficial si el video falla
+    async function showCover(artist, title) {
+      try {
+        const term = encodeURIComponent(`${artist} ${title}`);
+        const res = await fetch(`https://itunes.apple.com/search?term=${term}&entity=song&limit=1`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          const coverUrl = data.results[0].artworkUrl100.replace('100x100', '600x600');
+          mediaContainer.innerHTML = `<img src="${coverUrl}" style="width:100%; height:100%; object-fit:cover; filter: blur(0px); transition: 0.5s;">`;
+        } else {
+          showLogo();
+        }
+      } catch (e) {
+        showLogo();
+      }
+    }
+
     async function updateMetadata() {
       try {
         const res = await fetch('https://api.laut.fm/station/primerastereo/current_song');
@@ -247,15 +264,29 @@
         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
           showLogo();
         } else {
+          // Intento de búsqueda de video
           const query = encodeURIComponent(artist + " " + title + " official video");
           fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
           .then(r => r.text())
           .then(html => {
             const match = html.match(/"videoId":"([^"]+)"/);
             if (match && match[1]) {
-              mediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" frameborder="0" allow="autoplay"></iframe>`;
-            } else { showLogo(); }
-          }).catch(() => showLogo());
+              // Cargamos el video con controles ocultos y parámetros de seguridad
+              mediaContainer.innerHTML = `<iframe id="yt-frame" src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1" frameborder="0" allow="autoplay"></iframe>`;
+              
+              // Si el video tarda en cargar o da error de pantalla negra, se activa el fallback a carátula
+              const checkVideo = setTimeout(() => { showCover(artist, title); }, 5000);
+              
+              window.onmessage = (e) => {
+                 try {
+                   const msg = JSON.parse(e.data);
+                   if (msg.event === 'onReady') clearTimeout(checkVideo);
+                 } catch(err) {}
+              };
+            } else { 
+              showCover(artist, title); 
+            }
+          }).catch(() => showCover(artist, title));
         }
       } catch (e) { showLogo(); }
     }
@@ -268,7 +299,6 @@
           playIcon.classList.replace('fa-play', 'fa-pause');
           updateMetadata();
         }).catch(() => {
-            // Manejo de bloqueo de autoplay
             console.log("Autoplay bloqueado por el navegador");
         });
       } else {
@@ -278,11 +308,10 @@
       }
     }
 
-    // Intentar Autoplay al cargar
     window.onload = () => { 
       rotateBanners(); 
       updateMetadata();
-      setTimeout(() => { togglePlay(); }, 1500); // Pequeño delay para asegurar carga
+      setTimeout(() => { togglePlay(); }, 1500);
     };
     
     setInterval(() => { if (isPlaying) updateMetadata(); }, 15000);
