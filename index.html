@@ -56,9 +56,8 @@
       pointer-events: none;
     }
     
-    /* Control de Volumen Vertical Compacto */
     .vol-container {
-      height: 56px; /* Misma altura que el botón de play (w-14) */
+      height: 56px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -67,7 +66,7 @@
     }
     .volume-slider {
       appearance: none;
-      width: 50px; /* Más corto */
+      width: 50px;
       height: 4px;
       background: rgba(255, 255, 255, 0.2);
       border-radius: 5px;
@@ -152,16 +151,14 @@
         <p id="artist" class="text-orange-400 text-xs"><strong>Primera Stereo</p>
       </div>
 
-      <!-- Controles Alineados -->
       <div class="flex items-center justify-center gap-6 mt-2">
-        <div class="w-10"></div> <!-- Balance visual -->
+        <div class="w-10"></div> 
         
         <button onclick="togglePlay()" id="play-btn"
           class="w-14 h-14 bg-gradient-to-br from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-2xl shadow-xl active:scale-90 text-white z-10">
           <i class="fas fa-play" id="play-icon"></i>
         </button>
 
-        <!-- Volumen Compacto (Círculo Verde) -->
         <div class="vol-container">
           <input type="range" min="0" max="1" step="0.01" value="0.8" 
                  class="volume-slider" oninput="setVolume(this.value)">
@@ -192,6 +189,7 @@
     
     let isPlaying = true;
     let lastTitle = "";
+    let checkVideoTimeout; // Variable para controlar el temporizador
     const streamUrl = "https://primerastereo.stream.laut.fm/primerastereo";
 
     function toggleSidebar() {
@@ -224,25 +222,35 @@
     }
 
     function showLogo() {
+      clearTimeout(checkVideoTimeout);
       mediaContainer.innerHTML = `<img src="https://primera-stereo.netlify.app/PSRO5-5.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">`;
     }
 
-    // Nueva función para mostrar la carátula oficial si el video falla
     async function showCover(artist, title) {
+      clearTimeout(checkVideoTimeout);
       try {
         const term = encodeURIComponent(`${artist} ${title}`);
         const res = await fetch(`https://itunes.apple.com/search?term=${term}&entity=song&limit=1`);
         const data = await res.json();
         if (data.results && data.results.length > 0) {
           const coverUrl = data.results[0].artworkUrl100.replace('100x100', '600x600');
-          mediaContainer.innerHTML = `<img src="${coverUrl}" style="width:100%; height:100%; object-fit:cover; filter: blur(0px); transition: 0.5s;">`;
-        } else {
-          showLogo();
-        }
-      } catch (e) {
-        showLogo();
-      }
+          mediaContainer.innerHTML = `<img src="${coverUrl}" style="width:100%; height:100%; object-fit:cover; transition: 0.5s;">`;
+        } else { showLogo(); }
+      } catch (e) { showLogo(); }
     }
+
+    // Escucha mensajes del iframe de YouTube para saber si el video corre
+    window.onmessage = function(event) {
+        if (event.data) {
+            try {
+                const data = JSON.parse(event.data);
+                // Si el video empieza a reproducirse (infoDelivery o play), cancelamos el cambio a carátula
+                if (data.event === 'infoDelivery' || data.event === 'onStateChange') {
+                    clearTimeout(checkVideoTimeout);
+                }
+            } catch (e) {}
+        }
+    };
 
     async function updateMetadata() {
       try {
@@ -253,36 +261,28 @@
 
         if (title === lastTitle) return;
         lastTitle = title;
+        clearTimeout(checkVideoTimeout);
 
         songTitle.classList.remove('marquee-text');
         void songTitle.offsetWidth; 
         songTitle.textContent = title;
         if(title.length > 20) songTitle.classList.add('marquee-text');
-        
         artistEl.textContent = artist;
 
         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
           showLogo();
         } else {
-          // Intento de búsqueda de video
           const query = encodeURIComponent(artist + " " + title + " official video");
           fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
           .then(r => r.text())
           .then(html => {
             const match = html.match(/"videoId":"([^"]+)"/);
             if (match && match[1]) {
-              // Cargamos el video con controles ocultos y parámetros de seguridad
-              mediaContainer.innerHTML = `<iframe id="yt-frame" src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1" frameborder="0" allow="autoplay"></iframe>`;
+              // El enablejsapi=1 es clave para que el video nos avise si está funcionando
+              mediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1" frameborder="0" allow="autoplay"></iframe>`;
               
-              // Si el video tarda en cargar o da error de pantalla negra, se activa el fallback a carátula
-              const checkVideo = setTimeout(() => { showCover(artist, title); }, 5000);
-              
-              window.onmessage = (e) => {
-                 try {
-                   const msg = JSON.parse(e.data);
-                   if (msg.event === 'onReady') clearTimeout(checkVideo);
-                 } catch(err) {}
-              };
+              // Solo activamos la carátula si en 6 segundos el video no ha dado señales de vida
+              checkVideoTimeout = setTimeout(() => { showCover(artist, title); }, 6000);
             } else { 
               showCover(artist, title); 
             }
@@ -298,9 +298,7 @@
           isPlaying = true;
           playIcon.classList.replace('fa-play', 'fa-pause');
           updateMetadata();
-        }).catch(() => {
-            console.log("Autoplay bloqueado por el navegador");
-        });
+        }).catch(() => { console.log("Autoplay bloqueado"); });
       } else {
         audio.pause();
         isPlaying = false;
