@@ -45,12 +45,23 @@
       overflow: hidden;
       position: relative;
     }
-    iframe {
+    /* El video inicia invisible para no mostrar errores de UMPG */
+    #yt-player {
       position: absolute;
       top: 50%; left: 50%;
       width: 135%; height: 135%;
       transform: translate(-50%, -50%) scale(1.15);
       pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      z-index: 10;
+    }
+    #cover-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0; left: 0;
+      z-index: 5;
     }
     .vol-container {
       height: 56px;
@@ -132,7 +143,9 @@
 
     <div class="glass rounded-2xl p-4 shadow-2xl flex-1 flex flex-col justify-around mb-2">
       <div class="media-container" id="media-container">
-        <img src="https://primera-stereo.netlify.app/PSRO5-5.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">
+        <!-- Imagen por defecto -->
+        <img id="cover-img" src="https://primera-stereo.netlify.app/PSRO5-5.png" style="object-fit: contain; padding: 20px;">
+        <!-- El iframe se inyecta aquí dinámicamente -->
       </div>
 
       <div class="text-center mt-2">
@@ -171,6 +184,7 @@
   <script>
     const audio = document.getElementById('audio-player');
     const mediaContainer = document.getElementById('media-container');
+    const coverImg = document.getElementById('cover-img');
     const songTitle = document.getElementById('song-title');
     const artistEl = document.getElementById('artist');
     const playIcon = document.getElementById('play-icon');
@@ -204,28 +218,41 @@
 
     function showLogo() {
       if(checkVideoTimeout) clearTimeout(checkVideoTimeout);
-      mediaContainer.innerHTML = `<img src="https://primera-stereo.netlify.app/PSRO5-5.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">`;
+      const oldPlayer = document.getElementById('yt-player');
+      if(oldPlayer) oldPlayer.remove();
+      coverImg.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
+      coverImg.style.objectFit = "contain";
+      coverImg.style.padding = "20px";
+      coverImg.style.opacity = 1;
     }
 
-    async function showCover(artist, title) {
-      if(checkVideoTimeout) clearTimeout(checkVideoTimeout);
+    async function updateCover(artist, title) {
       try {
         const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&entity=song&limit=1`);
         const data = await res.json();
         if (data.results?.length > 0) {
           const coverUrl = data.results[0].artworkUrl100.replace('100x100', '600x600');
-          mediaContainer.innerHTML = `<img src="${coverUrl}" style="width:100%; height:100%; object-fit:cover; transition: 0.5s;">`;
-        } else { showLogo(); }
+          coverImg.src = coverUrl;
+          coverImg.style.objectFit = "cover";
+          coverImg.style.padding = "0";
+        } else {
+          coverImg.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
+          coverImg.style.objectFit = "contain";
+          coverImg.style.padding = "20px";
+        }
       } catch (e) { showLogo(); }
+      coverImg.style.opacity = 1;
     }
 
-    // Escucha mensajes de YouTube para detectar bloqueos
+    // El mensaje de YouTube nos dirá si el video empezó a sonar
     window.onmessage = function(e) {
       if (e.data && typeof e.data === 'string' && e.data.includes('onStateChange')) {
         const info = JSON.parse(e.data);
-        // Si el estado es 1 (jugando), cancelamos el timer de "video fallido"
-        if (info.info === 1) {
+        const ytPlayer = document.getElementById('yt-player');
+        // info.info === 1 significa "Playing"
+        if (info.info === 1 && ytPlayer) {
           clearTimeout(checkVideoTimeout);
+          ytPlayer.style.opacity = 1; // Solo se hace visible si realmente está reproduciendo
         }
       }
     };
@@ -241,6 +268,10 @@
         lastTitle = title;
         if(checkVideoTimeout) clearTimeout(checkVideoTimeout);
 
+        // Limpiar video anterior si existe
+        const oldPlayer = document.getElementById('yt-player');
+        if(oldPlayer) oldPlayer.remove();
+
         songTitle.classList.remove('marquee-text');
         void songTitle.offsetWidth; 
         songTitle.textContent = title;
@@ -250,21 +281,31 @@
         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
           showLogo();
         } else {
+          // Primero ponemos la carátula de respaldo mientras validamos el video
+          await updateCover(artist, title);
+
           const query = encodeURIComponent(artist + " " + title + " official music video");
           fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
           .then(r => r.text())
           .then(html => {
             const match = html.match(/"videoId":"([^"]+)"/);
             if (match && match[1]) {
-              // Agregamos enablejsapi=1 para poder monitorear el estado del video
-              mediaContainer.innerHTML = `<iframe id="yt-player" src="https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1" frameborder="0" allow="autoplay"></iframe>`;
+              const iframe = document.createElement('iframe');
+              iframe.id = "yt-player";
+              iframe.src = `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&origin=${window.location.origin}`;
+              iframe.frameBorder = "0";
+              iframe.allow = "autoplay";
+              mediaContainer.appendChild(iframe);
               
-              // Si en 8 segundos el video no ha emitido señal de "reproduciendo", forzamos la carátula
+              // Si en 8 segundos no recibimos el evento "Playing", eliminamos el iframe invisible
               checkVideoTimeout = setTimeout(() => {
-                showCover(artist, title);
+                const player = document.getElementById('yt-player');
+                if (player && player.style.opacity == "0") {
+                  player.remove();
+                }
               }, 8000);
-            } else { showCover(artist, title); }
-          }).catch(() => showCover(artist, title));
+            }
+          }).catch(() => {});
         }
       } catch (e) { showLogo(); }
     }
