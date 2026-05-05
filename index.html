@@ -6,7 +6,10 @@
   <title>PRIMERA STEREO 📻 RADIO VIDEO ONLINE</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <link rel="icon" type="image/ico" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="512x512">
+  <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
+  <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="32x32" />
+  <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" />
   <style>
     body { background: linear-gradient(135deg, #0f0a1f, #1a0033); font-family: system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
     .glass { background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -40,12 +43,18 @@
   </button>
 
   <div id="sidebar" class="p-4 pt-16">
-    <h3 class="text-blue-400 font-bold tracking-widest text-xs mb-4 px-2 uppercase">Menú</h3>
+    <h3 class="text-blue-400 font-bold tracking-widest text-xs mb-4 px-2 uppercase">Síguenos</h3>
     <nav class="text-white text-sm">
       <a href="https://www.instagram.com/Primera.Stereo/" target="_blank" class="nav-item"><i class="fab fa-instagram mr-3 text-pink-500"></i> Instagram</a>
       <a href="https://www.facebook.com/PrimeraStereoRadio" target="_blank" class="nav-item"><i class="fab fa-facebook mr-3 text-blue-600"></i> Facebook</a>
-      <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank" class="nav-item"><i class="fab fa-whatsapp mr-3 text-green-500"></i> Whatsapp</a>
+      <a href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank" class="nav-item"><i class="fab fa-whatsapp mr-3 text-green-500"></i> Whatsapp</a>
+      <a href="https://t.me/PrimeraStereo" target="_blank" class="nav-item"><i class="fab fa-telegram mr-3 text-blue-400"></i> Telegram</a>
+      <a href="https://www.tiktok.com/@primerastereo" target="_blank" class="nav-item"><i class="fab fa-tiktok mr-3 text-gray-200"></i> Tiktok</a>
+      <a href="https://soundcloud.com/primerastereo" target="_blank" class="nav-item"><i class="fab fa-soundcloud mr-3 text-orange-500"></i> Soundcloud</a>
       <a href="https://www.youtube.com/@primerastereo" target="_blank" class="nav-item"><i class="fab fa-youtube mr-3 text-red-600"></i> Youtube</a>
+      <a href="https://x.com/Primera_Stereo" target="_blank" class="nav-item"><i class="fab fa-x-twitter mr-3 text-blue-400"></i> Twitter / X</a>
+      <a href="https://www.threads.net/@primera.stereo" target="_blank" class="nav-item"><i class="fab fa-threads mr-3"></i> Threads</a>
+      <a href="https://www.appcreator24.com/app3819260-6rbmq8" target="_blank" class="nav-item"><i class="fab fa-google-play mr-3 text-green-600"></i> Descarga Nuestra App</a>
     </nav>
   </div>
 
@@ -83,13 +92,14 @@
     </div>
 
     <div class="text-center mb-1">
-      <a id="ad-link" href="#" target="_blank" class="block glass rounded-lg p-1 overflow-hidden">
-        <img id="ad-banner" src="https://primerastereo.netlify.app/disponible2.jpg" style="height:50px; width:100%; object-fit:contain;">
+      <p class="text-[8px] text-orange-400 font-bold tracking-widest mb-1">NUESTROS PATROCINANTES</p>
+      <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank" class="block glass rounded-lg p-1 overflow-hidden">
+        <img id="ad-banner" src="https://primerastereo.netlify.app/disponible2.jpg" style="height:50px; width:100%; object-fit:contain; transition:0.8s;">
       </a>
     </div>
 
     <footer class="text-center text-orange-400 text-[9px] py-1 font-bold">
-      © 2010 - 2026 PRIMERA STEREO
+      © 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
     </footer>
   </div>
 
@@ -106,6 +116,27 @@
     let lastTitle = "";
     let checkVideoTimeout = null;
     const streamUrl = "https://primerastereo.stream.laut.fm/primerastereo";
+
+    // Rotación de Banners
+    const banners = [
+      { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" },
+      { img: "https://primerastereo.netlify.app/Alvacom%20Systems.jpg", link: "https://www.facebook.com/AlvacomSystems" },
+      { img: "https://primerastereo.netlify.app/KINESIOLOGIA2.gif", link: "https://www.instagram.com/nely_alvarez" },
+      { img: "https://primerastereoprueba.netlify.app/Diseño sin título.gif", link: "http://www.en3d.io" }
+    ];
+    let bIdx = 0;
+
+    function rotateBanners() {
+      const bImg = document.getElementById('ad-banner');
+      if(!bImg) return;
+      bImg.style.opacity = 0;
+      setTimeout(() => {
+        bImg.src = banners[bIdx].img;
+        document.getElementById('ad-link').href = banners[bIdx].link;
+        bImg.style.opacity = 1;
+        bIdx = (bIdx + 1) % banners.length;
+      }, 800);
+    }
 
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
     function setVolume(val) { audio.volume = val; }
@@ -128,6 +159,7 @@
       } catch (e) { showLogo(); }
     }
 
+    // Listener para validar reproducción de video (Evita pantalla UMPG)
     window.onmessage = function(e) {
       if (e.data && typeof e.data === 'string' && e.data.includes('onStateChange')) {
         const info = JSON.parse(e.data);
@@ -161,14 +193,14 @@
         if(title.length > 20) songTitle.classList.add('marquee-text');
         artistEl.textContent = artist;
 
-        // Lógica de visualización
+        // PRIORIDAD DE VIDEO OFICIAL
         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
           showLogo();
         } else {
-          // Primero intentamos poner la carátula de Apple Music como base
+          // Primero cargamos carátula de respaldo
           await showCover(artist, title);
 
-          // Luego buscamos el video oficial
+          // Buscamos video oficial
           const query = encodeURIComponent(artist + " " + title + " official music video");
           fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
           .then(r => r.text())
@@ -182,7 +214,7 @@
               iframe.allow = "autoplay";
               mediaContainer.appendChild(iframe);
 
-              // Si falla el video (UMPG), se quedará la carátula de Apple que cargamos antes
+              // Si en 6 segundos no hay imagen (UMPG), dejamos la carátula
               checkVideoTimeout = setTimeout(() => {
                 const player = document.getElementById('yt-player');
                 if (player && player.style.opacity === "0") player.remove();
@@ -208,8 +240,13 @@
       }
     }
 
-    window.onload = () => { updateMetadata(); setTimeout(togglePlay, 1500); };
+    window.onload = () => { 
+      rotateBanners(); 
+      updateMetadata(); 
+      setTimeout(togglePlay, 1500); 
+    };
     setInterval(() => { if (isPlaying) updateMetadata(); }, 15000);
+    setInterval(rotateBanners, 15000); // Rotación cada 15 seg
   </script>
 </body>
 </html>
