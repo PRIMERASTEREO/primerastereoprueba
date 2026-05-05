@@ -8,40 +8,107 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="icon" type="image/ico" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="512x512">
   <style>
-    body { background: linear-gradient(135deg, #0f0a1f, #1a0033); font-family: system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
-    .glass { background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-    .marquee-container { width: 100%; overflow: hidden; white-space: nowrap; position: relative; }
-    .marquee-text { display: inline-block; padding-left: 100%; animation: marquee 12s linear infinite; }
-    @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
-    
-    .media-container { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; position: relative; }
-    
-    /* ESTILO CLAVE: El video nace invisible y diminuto */
+    body {
+      background: linear-gradient(135deg, #0f0a1f, #1a0033);
+      font-family: system-ui, -apple-system, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      overflow: hidden;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .marquee-container {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+    .marquee-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: marquee 12s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
+    .media-container {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Estilo para ocultar errores de UMPG antes de validación */
     #yt-player {
       position: absolute;
       top: 50%; left: 50%;
-      width: 1px; height: 1px; /* Casi inexistente */
-      transform: translate(-50%, -50%);
-      opacity: 0;
-      transition: opacity 1s ease, width 0.1s, height 0.1s;
-      z-index: 10;
-      pointer-events: none;
-    }
-    /* Clase que se aplica solo cuando el video es SEGURO (sin UMPG) */
-    #yt-player.video-ok {
       width: 135%; height: 135%;
       transform: translate(-50%, -50%) scale(1.15);
-      opacity: 1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      z-index: 10;
     }
-
-    #cover-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 5; transition: opacity 0.5s; }
-    .vol-container { height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 30px; }
-    .volume-slider { appearance: none; width: 50px; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 5px; transform: rotate(-90deg); outline: none; cursor: pointer; }
-    .volume-slider::-webkit-slider-thumb { appearance: none; width: 10px; height: 10px; background: #60a5fa; border-radius: 50%; }
-    
-    #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: rgba(15, 10, 31, 0.98); z-index: 100; transition: 0.4s; border-right: 1px solid rgba(255,255,255,0.1); overflow-y: auto; }
+    #cover-img {
+      width: 100%; height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      z-index: 5;
+      object-fit: cover;
+      transition: opacity 0.5s;
+    }
+    .vol-container {
+      height: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+    }
+    .volume-slider {
+      appearance: none;
+      width: 50px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      transform: rotate(-90deg);
+      outline: none;
+      cursor: pointer;
+    }
+    .volume-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      background: #60a5fa;
+      border-radius: 50%;
+    }
+    #sidebar {
+      position: fixed;
+      top: 0; left: -280px;
+      width: 280px; height: 100%;
+      background: rgba(15, 10, 31, 0.98);
+      z-index: 100;
+      transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-right: 1px solid rgba(255,255,255,0.1);
+      overflow-y: auto;
+    }
     #sidebar.active { left: 0; }
-    .nav-item { display: flex; align-items: center; padding: 10px 15px; border-radius: 10px; margin-bottom: 5px; background: rgba(255,255,255,0.03); transition: 0.3s; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      background: rgba(255,255,255,0.03);
+      transition: 0.3s;
+    }
   </style>
 </head>
 <body class="p-2">
@@ -51,37 +118,41 @@
   </button>
 
   <div id="sidebar" class="p-4 pt-16">
-    <h3 class="text-blue-400 font-bold tracking-widest text-xs mb-4 px-2 uppercase text-center">PRIMERA STEREO</h3>
+    <h3 class="text-blue-400 font-bold tracking-widest text-xs mb-4 px-2 uppercase">Síguenos</h3>
     <nav class="text-white text-sm">
       <a href="https://www.instagram.com/Primera.Stereo/" target="_blank" class="nav-item"><i class="fab fa-instagram mr-3 text-pink-500"></i> Instagram</a>
       <a href="https://www.facebook.com/PrimeraStereoRadio" target="_blank" class="nav-item"><i class="fab fa-facebook mr-3 text-blue-600"></i> Facebook</a>
-      <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank" class="nav-item"><i class="fab fa-whatsapp mr-3 text-green-500"></i> Whatsapp</a>
+      <a href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20de%20la%20publicidad" target="_blank" class="nav-item"><i class="fab fa-whatsapp mr-3 text-green-500"></i> Whatsapp</a>
+      <a href="https://t.me/PrimeraStereo" target="_blank" class="nav-item"><i class="fab fa-telegram mr-3 text-blue-400"></i> Telegram</a>
+      <a href="https://www.tiktok.com/@primerastereo" target="_blank" class="nav-item"><i class="fab fa-tiktok mr-3 text-gray-200"></i> Tiktok</a>
+      <a href="https://soundcloud.com/primerastereo" target="_blank" class="nav-item"><i class="fab fa-soundcloud mr-3 text-orange-500"></i> Soundcloud</a>
       <a href="https://www.youtube.com/@primerastereo" target="_blank" class="nav-item"><i class="fab fa-youtube mr-3 text-red-600"></i> Youtube</a>
-      <a href="https://www.appcreator24.com/app3819260-6rbmq8" target="_blank" class="nav-item text-orange-400"><i class="fas fa-download mr-3"></i> App Android</a>
+      <a href="https://x.com/Primera_Stereo" target="_blank" class="nav-item"><i class="fab fa-x-twitter mr-3 text-blue-400"></i> Twitter / X</a>
+      <a href="https://www.threads.net/@primera.stereo" target="_blank" class="nav-item"><i class="fab fa-threads mr-3"></i> Threads</a>
+      <a href="https://www.appcreator24.com/app3819260-6rbmq8" target="_blank" class="nav-item"><i class="fab fa-google-play mr-3 text-green-600"></i> Descarga Nuestra App</a>
     </nav>
   </div>
 
   <div class="flex-1 flex flex-col max-w-lg w-full mx-auto justify-between pt-2">
     <div class="flex items-center justify-center gap-2 mb-2">
-      <img src="https://primera-stereo.netlify.app/PSRO5-5.png" alt="Logo" class="w-08 h-10 object-contain rounded-lg">
+      <img src="https://primerastereo.netlify.app/favicon.png" alt="Logo" class="w-08 h-10 object-contain rounded-lg">
       <div>
-        <h1 class="text-xl font-bold tracking-tighter text-white uppercase">PRIMERA STEREO</h1>
-        <p class="text-orange-400 text-[10px] text-center -mt-1 uppercase tracking-widest">Radio Video Online</p>
+        <h1 class="text-xl font-bold tracking-tighter text-white uppercase"><strong>PRIMERA STEREO</h1>
+        <p class="text-orange-400 text-[10px] text-center -mt-1 uppercase tracking-widest"><strong>Radio Video Online</p>
       </div>
     </div>
 
     <div class="glass rounded-2xl p-4 shadow-2xl flex-1 flex flex-col justify-around mb-2">
       <div class="media-container" id="media-container">
-        <img id="cover-img" src="https://primera-stereo.netlify.app/PSRO5-5.png" style="object-fit: contain; padding: 20px;">
-        <!-- El iframe se inyecta vacío al inicio -->
+        <img id="cover-img" src="https://primera-stereo.netlify.app/PSRO5-5.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">
       </div>
 
       <div class="text-center mt-2">
-        <p class="uppercase tracking-widest text-orange-400 text-[10px] font-bold mb-1">● EN VIVO</p>
+        <p class="uppercase tracking-widest text-orange-400 text-[12px] font-bold mb-1">● EN VIVO</p>
         <div class="marquee-container">
-          <h2 id="song-title" class="text-lg font-bold text-white">Cargando señal...</h2>
+          <h2 id="song-title" class="text-lg font-bold text-white">Iniciando...</h2>
         </div>
-        <p id="artist" class="text-orange-400 text-xs">Primera Stereo</p>
+        <p id="artist" class="text-orange-400 text-xs"><strong>Primera Stereo</p>
       </div>
 
       <div class="flex items-center justify-center gap-6 mt-2">
@@ -96,14 +167,14 @@
     </div>
 
     <div class="text-center mb-1">
-      <p class="text-[8px] text-orange-400 font-bold tracking-widest mb-1">PATROCINANTES</p>
+      <p class="text-[8px] text-orange-400 font-bold tracking-widest mb-1"><strong>NUESTROS PATROCINANTES</p>
       <a id="ad-link" href="#" target="_blank" class="block glass rounded-lg p-1 overflow-hidden">
         <img id="ad-banner" src="https://primerastereo.netlify.app/disponible2.jpg" style="height:50px; width:100%; object-fit:contain; transition:0.8s;">
       </a>
     </div>
 
     <footer class="text-center text-orange-400 text-[9px] py-1">
-      © 2010 - 2026 PRIMERA STEREO
+      <strong>© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
     </footer>
   </div>
 
@@ -112,7 +183,6 @@
   <script>
     const audio = document.getElementById('audio-player');
     const mediaContainer = document.getElementById('media-container');
-    const coverImg = document.getElementById('cover-img');
     const songTitle = document.getElementById('song-title');
     const artistEl = document.getElementById('artist');
     const playIcon = document.getElementById('play-icon');
@@ -126,9 +196,10 @@
     function setVolume(val) { audio.volume = val; }
 
     const banners = [
-      { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429" },
+      { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20de%20la%20publicidad" },
       { img: "https://primerastereo.netlify.app/Alvacom%20Systems.jpg", link: "https://www.facebook.com/AlvacomSystems" },
-      { img: "https://primerastereo.netlify.app/KINESIOLOGIA2.gif", link: "https://www.instagram.com/nely_alvarez" }
+      { img: "https://primerastereo.netlify.app/KINESIOLOGIA2.gif", link: "https://www.instagram.com/nely_alvarez" },
+      { img: "https://primerastereoprueba.netlify.app/Diseño sin título.gif", link: "http://www.en3d.io" }
     ];
     let bIdx = 0;
 
@@ -146,41 +217,36 @@
 
     function showLogo() {
       if(checkVideoTimeout) clearTimeout(checkVideoTimeout);
-      const oldPlayer = document.getElementById('yt-player');
-      if(oldPlayer) oldPlayer.remove();
-      coverImg.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
-      coverImg.style.objectFit = "contain";
-      coverImg.style.padding = "20px";
-      coverImg.style.opacity = 1;
+      const player = document.getElementById('yt-player');
+      if(player) player.remove();
+      mediaContainer.innerHTML = `<img id="cover-img" src="https://primera-stereo.netlify.app/PSRO5-5.png" style="width:100%; height:100%; object-fit:contain; padding: 20px;">`;
     }
 
-    async function updateCover(artist, title) {
+    async function showCover(artist, title) {
+      if(checkVideoTimeout) clearTimeout(checkVideoTimeout);
       try {
+        // Consulta a iTunes/Apple Music para carátula fiable
         const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&entity=song&limit=1`);
         const data = await res.json();
         if (data.results?.length > 0) {
-          const coverUrl = data.results[0].artworkUrl100.replace('100x100', '600x600');
-          coverImg.src = coverUrl;
-          coverImg.style.objectFit = "cover";
-          coverImg.style.padding = "0";
+          // Obtenemos la imagen de alta calidad directamente de los servidores de music.apple.com
+          const coverUrl = data.results[0].artworkUrl100.replace('100x100', '800x800');
+          mediaContainer.innerHTML = `<img id="cover-img" src="${coverUrl}" style="width:100%; height:100%; object-fit:cover; transition: 0.5s;">`;
         } else { showLogo(); }
       } catch (e) { showLogo(); }
-      coverImg.style.opacity = 1;
     }
 
-    // LISTENER DE SEGURIDAD: Solo muestra el video si el estado es 1 (Playing)
+    // Listener para validar si el video realmente está reproduciendo (Evita ver UMPG)
     window.onmessage = function(e) {
       if (e.data && typeof e.data === 'string' && e.data.includes('onStateChange')) {
         const info = JSON.parse(e.data);
         const ytPlayer = document.getElementById('yt-player');
-        // Si el video realmente está reproduciendo (info.info === 1)
+        const cover = document.getElementById('cover-img');
+        // info.info === 1 es "Playing"
         if (info.info === 1 && ytPlayer) {
           clearTimeout(checkVideoTimeout);
-          // Esperamos 1.5 segundos extra de "reproducción confirmada" antes de mostrarlo
-          setTimeout(() => {
-            ytPlayer.classList.add('video-ok');
-            coverImg.style.opacity = 0;
-          }, 1500);
+          ytPlayer.style.opacity = 1;
+          if(cover) cover.style.opacity = 0;
         }
       }
     };
@@ -196,6 +262,7 @@
         lastTitle = title;
         if(checkVideoTimeout) clearTimeout(checkVideoTimeout);
 
+        // Limpiar video anterior
         const oldPlayer = document.getElementById('yt-player');
         if(oldPlayer) oldPlayer.remove();
 
@@ -205,13 +272,13 @@
         if(title.length > 20) songTitle.classList.add('marquee-text');
         artistEl.textContent = artist;
 
-        // Mostrar carátula por defecto mientras validamos el video en las sombras
-        await updateCover(artist, title);
-
         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
           showLogo();
         } else {
-          const query = encodeURIComponent(artist + " " + title + " official video");
+          // Siempre cargamos la carátula de Music Apple primero como fondo
+          await showCover(artist, title);
+
+          const query = encodeURIComponent(artist + " " + title + " official music video");
           fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
           .then(r => r.text())
           .then(html => {
@@ -219,20 +286,19 @@
             if (match && match[1]) {
               const iframe = document.createElement('iframe');
               iframe.id = "yt-player";
-              // Cargamos con mute=1 y enablejsapi=1 para monitorear sin ser vistos
+              // Agregamos enablejsapi=1 para monitorear el estado y ocultar el aviso de UMPG
               iframe.src = `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&origin=${window.location.origin}`;
               iframe.frameBorder = "0";
               iframe.allow = "autoplay";
               mediaContainer.appendChild(iframe);
-              
-              // Si en 7 segundos no hay señal de vida positiva, borramos el intento
+
+              // Si en 6 segundos no hay confirmación de reproducción, eliminamos el video (bloqueado por UMPG)
               checkVideoTimeout = setTimeout(() => {
                 const player = document.getElementById('yt-player');
-                if (player && !player.classList.contains('video-ok')) {
+                if (player && player.style.opacity === "0") {
                   player.remove();
-                  coverImg.style.opacity = 1;
                 }
-              }, 7000);
+              }, 6000);
             }
           }).catch(() => {});
         }
@@ -257,7 +323,7 @@
     window.onload = () => { 
       rotateBanners(); 
       updateMetadata();
-      setTimeout(togglePlay, 1000);
+      setTimeout(togglePlay, 1500);
     };
     setInterval(() => { if (isPlaying) updateMetadata(); }, 15000);
     setInterval(rotateBanners, 15000);
