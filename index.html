@@ -6,7 +6,7 @@
   <title>PRIMERA STEREO 📻 RADIO VIDEO ONLINE</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
+  <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
   <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="192x192" />
   <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="32x32" /> 
   <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />  
@@ -14,15 +14,20 @@
   <style>
     body { background: linear-gradient(135deg, #0f0a1f, #1a0033); font-family: system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
     .glass { background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    
+    /* Contenedor de Video idéntico al de respaldo */
     .media-container { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; position: relative; }
-    #yt-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scale(1.8); z-index: 10; opacity: 0; transition: opacity 1s; pointer-events: none; }
-    #cover-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 20; transition: opacity 1s; opacity: 1; }
+    #yt-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+    #cover-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10; pointer-events: none; }
+    
     .marquee-container { width: 100%; overflow: hidden; white-space: nowrap; }
     .marquee-text { display: inline-block; padding-left: 100%; animation: marquee 12s linear infinite; }
     @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+    
     #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: rgba(10, 10, 10, 0.98); z-index: 100; transition: 0.4s; border-right: 1px solid #6c5ce7; overflow-y: auto; }
     #sidebar.active { left: 0; }
-    .nav-item { display: flex; align-items: center; padding: 10px 15px; border-radius: 10px; margin-bottom: 5px; background: rgba(255,255,255,0.03); transition: 0.3s; color: white; text-decoration: none; font-size: 14px; }
+    .nav-item { display: flex; align-items: center; padding: 10px 15px; border-radius: 10px; margin-bottom: 5px; background: rgba(255,255,255,0.03); color: white; text-decoration: none; font-size: 14px; }
+    
     .volume-slider { appearance: none; width: 50px; height: 4px; background: rgba(255, 255, 255, 0.2); transform: rotate(-90deg); outline: none; cursor: pointer; }
   </style>
 </head>
@@ -55,7 +60,7 @@
     </div>
 
     <div class="glass rounded-2xl p-4 shadow-2xl flex-1 flex flex-col justify-around mb-2">
-      <div class="media-container">
+      <div class="media-container" id="player-wrapper">
         <div id="yt-player"></div>
         <img id="cover-img" src="https://primera-stereo.netlify.app/PSRO5-5.png">
       </div>
@@ -63,7 +68,7 @@
       <div class="text-center mt-2">
         <p class="uppercase tracking-widest text-orange-400 text-[12px] font-bold mb-1">● EN VIVO</p>
         <div class="marquee-container">
-          <h2 id="song-title" class="text-lg font-bold text-white tracking-tight">Cargando...</h2>
+          <h2 id="song-title" class="text-lg font-bold text-white tracking-tight">Escuchando...</h2>
         </div>
         <p id="artist" class="text-orange-400 text-xs font-bold">Primera Stereo</p>
       </div>
@@ -77,15 +82,16 @@
       </div>
     </div>
 
+    <!-- BANNERS -->
     <div class="text-center mb-1">
-      <p class="text-[10px] text-orange-400 font-bold tracking-widest mb-1 uppercase">Anuncie aquí</p>
-      <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank" class="block glass rounded-lg p-1 overflow-hidden">
+      <p class="text-[10px] text-orange-400 font-bold tracking-widest mb-1 uppercase">Patrocinantes</p>
+      <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio" target="_blank" class="block glass rounded-lg p-1 overflow-hidden">
         <img id="ad-banner" src="https://primerastereo.netlify.app/disponible2.jpg" style="height:55px; width:100%; object-fit:contain; transition: opacity 0.8s;">
       </a>
     </div>
 
     <footer class="text-center text-orange-400 text-[7px] py-1 font-bold">
-      © 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+      © 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
     </footer>
   </div>
 
@@ -94,9 +100,9 @@
   <script>
     const audio = document.getElementById('audio-player');
     const art = document.getElementById('cover-img');
-    const ytElem = document.getElementById('yt-player');
-    let player, errorYoutube = false, lastTitle = "";
+    let player, lastTitle = "";
 
+    // BANNERS
     const banners = [
       { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio" },
       { img: "https://primerastereo.netlify.app/Alvacom%20Systems.jpg", link: "https://www.facebook.com/AlvacomSystems" },
@@ -104,7 +110,6 @@
       { img: "https://primerastereoprueba.netlify.app/Diseño sin título.gif", link: "http://www.en3d.io" }
     ];
     let bIdx = 0;
-
     function rotateBanners() {
       const bImg = document.getElementById('ad-banner');
       bImg.style.opacity = 0;
@@ -116,6 +121,7 @@
       }, 800);
     }
 
+    // YOUTUBE API
     var tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -127,16 +133,8 @@
         playerVars: { 'autoplay': 1, 'mute': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'playsinline': 1 },
         events: {
           'onStateChange': (e) => {
-            // FIX DEFINITIVO: Si el video está cargando o reproduciendo, mostramos el frame
-            if (e.data == YT.PlayerState.PLAYING || e.data == YT.PlayerState.BUFFERING) {
-              art.style.opacity = "0";
-              ytElem.style.opacity = "1";
-            } else {
-              art.style.opacity = "1";
-              ytElem.style.opacity = "0";
-            }
-          },
-          'onError': () => { art.style.opacity = "1"; ytElem.style.opacity = "0"; }
+            if (e.data == YT.PlayerState.PLAYING) { art.style.display = "none"; }
+          }
         }
       });
     }
@@ -145,42 +143,35 @@
       try {
         const res = await fetch('https://api.laut.fm/station/primerastereo/current_song');
         const data = await res.json();
-        const title = data.title || "";
-        const artist = data.artist?.name || "";
+        if (data.title === lastTitle) return;
+        lastTitle = data.title;
 
-        if (title === lastTitle) return;
-        lastTitle = title;
+        document.getElementById('song-title').textContent = data.title;
+        document.getElementById('artist').textContent = data.artist.name;
 
-        const songTitle = document.getElementById('song-title');
-        songTitle.classList.remove('marquee-text');
-        void songTitle.offsetWidth; 
-        songTitle.textContent = title;
-        if(title.length > 20) songTitle.classList.add('marquee-text');
-        document.getElementById('artist').textContent = artist;
-
-        if (!artist.toUpperCase().includes("PRIMERA STEREO") && !title.toUpperCase().includes("JINGLE")) {
-          // Arte de iTunes
-          fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&entity=song&limit=1`)
+        if (!data.artist.name.toUpperCase().includes("PRIMERA STEREO")) {
+          // Caratula
+          fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(data.artist.name + ' ' + data.title)}&entity=song&limit=1`)
           .then(r => r.json()).then(iData => {
             if(iData.results?.length > 0) art.src = iData.results[0].artworkUrl100.replace('100x100', '800x800');
           });
 
-          // Buscar Video
-          const query = encodeURIComponent(artist + " " + title + " official video");
+          // Video
+          const query = encodeURIComponent(data.artist.name + " " + data.title + " official video");
           fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
           .then(r => r.text()).then(html => {
             const id = html.match(/"videoId":"([^"]+)"/);
             if (id && id[1] && player && player.loadVideoById) {
+              art.style.display = "block"; 
               player.loadVideoById({ videoId: id[1] });
               player.mute();
-              player.playVideo(); // Forzamos el play
+              player.playVideo();
             }
           });
         } else {
           art.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
+          art.style.display = "block";
           if(player && player.stopVideo) player.stopVideo();
-          art.style.opacity = "1";
-          ytElem.style.opacity = "0";
         }
       } catch (e) {}
     }
@@ -201,11 +192,9 @@
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
     function setVolume(val) { audio.volume = val; }
 
-    window.onload = () => {
-      setInterval(updateMetadata, 15000);
-      setInterval(rotateBanners, 15000);
-      rotateBanners();
-    };
+    setInterval(updateMetadata, 15000);
+    setInterval(rotateBanners, 15000);
+    rotateBanners();
   </script>
 </body>
 </html>
