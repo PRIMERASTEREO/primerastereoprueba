@@ -205,5 +205,34 @@
     setInterval(rotateBanners, 15000);
     window.onload = rotateBanners;
   </script>
+  	<script>
+  // 1. Evitar el men煤 del botón derecho (segundo botón)
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  // 2. Inhabilitar Ctrl+U (y Ctrl+Shift+I / F12 para mayor seguridad)
+  document.addEventListener('keydown', function(event) {
+    if (
+      (event.ctrlKey && event.key === 'u') || // Ctrl+U
+      (event.ctrlKey && event.shiftKey && event.key === 'I') || // Ctrl+Shift+I
+      event.key === 'F12' // F12
+    ) {
+      event.preventDefault();
+      return false;
+    }
+  });
+</script>
+
+<script>
+    // Inhabilitar clic derecho
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // Inhabilitar Ctrl+U y Ctrl+I
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
 </body>
 </html>
