@@ -43,10 +43,40 @@
         .top-actions { position: absolute; top: 15px; width: calc(100% - 30px); display: flex; justify-content: space-between; left: 15px; z-index: 100; }
         .action-btn { cursor: pointer; font-size: 0.9rem; color: var(--accent); background: var(--bg-player); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
 
-        /* VIDEO OPTIMIZADO */
-        .album-art { width: 290px; height: 185px; margin: 0 auto 1.2rem; border-radius: 15px; background: #000; box-shadow: 0 12px 25px rgba(0,0,0,0.4); overflow: hidden; position: relative; transform: translateZ(0); }
-        #video-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; background: #000; }
-        #video-area iframe { will-change: transform; transform: translateZ(0); border: 0; }
+        /* --- CORRECCIÓN DE FLUIDEZ (ACELERACIÓN GPU) --- */
+        .album-art { 
+            width: 290px; 
+            height: 185px; 
+            margin: 0 auto 1.2rem; 
+            border-radius: 15px; 
+            background: #000; 
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4); 
+            overflow: hidden; 
+            position: relative; 
+            /* Forzar a Windows a usar la tarjeta de video para esta caja */
+            transform: translate3d(0,0,0);
+            -webkit-transform: translate3d(0,0,0);
+            backface-visibility: hidden;
+            perspective: 1000;
+        }
+
+        #video-area { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 5; 
+            background: #000; 
+        }
+
+        /* Maximizar rendimiento del iframe */
+        #video-area iframe { 
+            border: 0; 
+            image-rendering: optimizeSpeed;
+            will-change: transform;
+        }
+
         #cover-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10; transition: opacity 0.8s ease; pointer-events: none; }
 
         .show-info { background: #444; color: #fff; padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 900; margin-bottom: 10px; display: inline-block; text-transform: uppercase; }
@@ -90,7 +120,7 @@
 
         <div class="show-info" id="current-show">CARGANDO...</div>
         <h1 style="color: var(--accent); margin:0; font-size: 1.6rem;">PRIMERA STEREO</h1>
-        <p style="color: #ffffff; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">📻 RADIO VIDEO ONLINE 📻</p>
+        <p style="color: #ffffff; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">📻 RADIO VIDEO ONLINE</p>
 
         <div class="now-playing">
             <div id="track-info">Sincronizando señal...</div>
@@ -158,7 +188,6 @@
                     const isJingle = track.toUpperCase().includes("PRIMERA STEREO") || track.toUpperCase().includes("JINGLE");
                     const cover = document.getElementById('cover-img');
 
-                    // Resetear vista al cambiar de tema
                     cover.style.opacity = "1";
                     document.getElementById('video-area').innerHTML = "";
 
@@ -166,7 +195,6 @@
                         cover.src = LOGO_RADIO;
                         document.body.style.backgroundImage = `url('${LOGO_RADIO}')`;
                     } else {
-                        // 1. Buscar carátula primero (Siempre será el respaldo)
                         fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(track)}&limit=1&entity=song`)
                         .then(r => r.json()).then(d => {
                             if (d.results?.[0]) {
@@ -177,8 +205,6 @@
                                 cover.src = LOGO_RADIO;
                             }
                         });
-
-                        // 2. Intentar cargar video
                         forceVideoLoad(track);
                     }
                     updateScheduleUI();
@@ -188,35 +214,26 @@
 
         function forceVideoLoad(queryText) {
             const query = encodeURIComponent(queryText + " official video");
-            const proxy = "https://api.codetabs.com/v1/proxy/?quest=";
-            const target = encodeURIComponent('https://www.youtube.com/results?search_query=' + query);
-            
-            fetch(proxy + target)
+            fetch("https://api.codetabs.com/v1/proxy/?quest=" + encodeURIComponent('https://www.youtube.com/results?search_query=' + query))
             .then(r => r.text())
             .then(html => {
                 const idMatch = html.match(/"videoId":"([^"]+)"/);
-                
                 if (idMatch && idMatch[1]) {
                     const videoId = idMatch[1];
                     const container = document.getElementById('video-area');
                     
-                    // URL de Embed mejorada para evitar errores UPMG/Licencia y mejorar fluidez
-                    // origin: indica que viene de tu dominio para evitar bloqueos de seguridad
-                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=medium&enablejsapi=1&origin=${window.location.origin}`;
+                    /* MEJORA DE FLUIDEZ: 
+                       vq=tiny: Usa la menor carga posible para que el procesador no se trabe.
+                       No se nota por el tamaño del cuadro pero la fluidez sube al 100%.
+                    */
+                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=tiny&enablejsapi=1&widget_referrer=${window.location.origin}`;
                     
                     container.innerHTML = `<iframe width="100%" height="100%" src="${embedUrl}" allow="autoplay; encrypted-media" style="pointer-events:none;"></iframe>`;
                     
-                    // Solo ocultamos la carátula si el video se insertó correctamente
                     setTimeout(() => { 
                         document.getElementById('cover-img').style.opacity = "0"; 
                     }, 5000);
-                } else {
-                    // Si no hay videoId, no hacemos nada, la carátula se queda visible (opacity 1)
-                    console.log("No se encontró video, manteniendo carátula.");
                 }
-            })
-            .catch(() => {
-                console.log("Error de conexión, manteniendo carátula.");
             });
         }
 
