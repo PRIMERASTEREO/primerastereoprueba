@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PRIMERA STEREO 📻 RADIO VIDEO ONLINE</title>
-    <link rel="icon" type="image/png" href="https://primera-stereo.netlify.app/PSRO5-5.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="https://primerastereo.netlify.app/favicon.png">
+    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="192x192" />
+    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="32x32" /> 
+    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />  
+    <link rel="apple-touch-icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg-container: rgba(30, 30, 30, 0.75);
@@ -40,14 +44,13 @@
         .action-group { display: flex; gap: 8px; }
         .action-btn { cursor: pointer; font-size: 0.9rem; color: var(--accent); background: var(--bg-player); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
 
-        /* OPTIMIZACIÓN DE VIDEO: ACELERACIÓN GPU */
-        .album-art { width: 290px; height: 185px; margin: 0 auto 1.2rem; border-radius: 15px; background: #000; box-shadow: 0 12px 25px rgba(0,0,0,0.4); overflow: hidden; position: relative; transform: translateZ(0); }
+        .album-art { width: 290px; height: 185px; margin: 0 auto 1.2rem; border-radius: 15px; background: #000; box-shadow: 0 12px 25px rgba(0,0,0,0.4); overflow: hidden; position: relative; }
         #video-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
-        #video-area iframe { will-change: transform; transform: translateZ(0); }
         #cover-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10; transition: opacity 0.8s ease; pointer-events: none; }
 
         .show-info { background: #444; color: #fff; padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 900; margin-bottom: 10px; display: inline-block; text-transform: uppercase; }
 
+        /* Marquesina Corregida */
         .now-playing { margin: 0.5rem 0; width: 100%; overflow: hidden; height: 30px; position: relative; display: flex; align-items: center; }
         #track-info { position: absolute; white-space: nowrap; font-size: 1rem; font-weight: 600; color: var(--text-main); animation: marquee-scroll 12s linear infinite; padding-left: 100%; }
         @keyframes marquee-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
@@ -55,6 +58,7 @@
         .player-container { background: var(--bg-player); padding: 8px; border-radius: 50px; margin: 0.5rem 0 1rem; border: 1px solid var(--border); }
         audio { width: 100%; filter: var(--audio-filter); height: 32px; }
 
+        /* Bloques sin Scroll */
         .upcoming-section { background: rgba(0, 0, 0, 0.2); border-radius: 15px; padding: 12px; margin-bottom: 1.2rem; border: 1px solid var(--border); text-align: left; }
         .upcoming-title { font-size: 0.65rem; font-weight: 900; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
         .upcoming-item { display: flex; justify-content: space-between; font-size: 0.65rem; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
@@ -78,7 +82,7 @@
             </div>
         </div>
 
-        <div style="background: #ff0055; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; margin-bottom: 5px; display: inline-block; margin-top: 0px;">● EN VIVO</div>
+        <div style="background: #ff0055; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; margin-bottom: 10px; display: inline-block; margin-top: 10px;">● EN VIVO</div>
         
         <div class="album-art">
             <div id="video-area"></div>
@@ -86,7 +90,7 @@
         </div>
 
         <div class="show-info" id="current-show">CARGANDO...</div>
-        <h1 style="color: var(--accent); margin:0; font-size: 1.6rem;">PRIMERA STEREO</h1>
+        <h1 style="color: var(--accent); margin:0; font-size: 1.6rem;">PRIMERA STEREO.</h1>
         <p style="color: #ffffff; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">📻 RADIO VIDEO ONLINE</p>
 
         <div class="now-playing">
@@ -116,6 +120,7 @@
         <div style="font-size: 0.55rem; color: var(--text-slogan); font-weight: bold;">© 2010 - 2026 PRIMERA STEREO<br>Radio Video Online</div>
     </div>
 
+    <!-- Modales -->
     <div id="qrModal" style="display:none;" class="modal" onclick="toggleModal('qrModal')">
         <div style="background:#222; padding:20px; border-radius:20px; text-align:center; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2000;">
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://primera-stereo.netlify.app" style="border-radius:10px;">
@@ -125,7 +130,9 @@
     <div id="privacyModal" style="display:none;" class="modal" onclick="toggleModal('privacyModal')">
         <div style="background:#222; color:white; padding:20px; border-radius:20px; width:280px; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2000; text-align:center;">
             <h3>Sobre Nosotros</h3>
-            <p style="font-size:0.7rem;">Sómos PRIMERA STEREO Radio Video Online, Queremos que formes parte de esta emocionante aventura radial. Tu participación, con tus pedidos musicales y comentarios, no solo enriquece nuestra programación, sino que asegura que PRIMERA STEREO Radio Video Online continúe siendo un faro de buenos éxitos y melodías inolvidables elevando el estándar de la radio profesional, transmitiendo éxitos y creando experiencias musicales únicas las 24 horas, desde Venezuela para el mundo. "En Todas Partes" ha sido, es, y seguirá siendo la escencia de nuestro Slogan de Origen. ¡Únete a nosotros, síguenos en nuestras redes sociales, comparte, comenta y vive la música como nunca antes!</p>
+            <p style="font-size:0.7rem;">Sómos PRIMERA STEREO Radio Video Online, Queremos que formes parte de esta emocionante aventura radial. Tu participación, con tus pedidos musicales y comentarios, no solo enriquece nuestra programación, sino que asegura que PRIMERA STEREO Radio Video Online continúe siendo un faro de buenos éxitos y melodías inolvidables elevando el estándar de la radio profesional, transmitiendo éxitos y creando experiencias musicales únicas las 24 horas, desde Venezuela para el mundo. "En Todas Partes" ha sido, es, y seguirá siendo la escencia de nuestro Slogan de Origen. ¡Únete a nosotros, síguenos en nuestras redes sociales, comparte, comenta y vive la música como nunca antes!
+
+</p>
             <button onclick="toggleModal('privacyModal')">CERRAR</button>
         </div>
     </div>
@@ -135,11 +142,16 @@
         let lastTrack = "";
 
         const schedule = [
-            { s: 0, e: 2, n: "BALADAS ROCK" }, { s: 2, e: 4, n: "BALADAS EN ESPAÑOL POP" },
-            { s: 4, e: 7, n: "MÚSICA LLANERA VENEZOLANA" }, { s: 7, e: 17, n: "MÚSICA VARIADA" },
-            { s: 17, e: 18, n: "MERENGUES" }, { s: 18, e: 19, n: "MÚSICA POP RETRO" },
-            { s: 19, e: 20, n: "BALADAS EN ESPAÑOL POP" }, { s: 20, e: 21, n: "BALADAS VENEZOLANAS POP" },
-            { s: 21, e: 22, n: "BALADAS ROCK" }, { s: 22, e: 24, n: "BALADAS EN ESPAÑOL POP" }
+            { s: 0, e: 2, n: "BALADAS ROCK" },
+            { s: 2, e: 4, n: "BALADAS EN ESPAÑOL POP" },
+            { s: 4, e: 7, n: "MÚSICA LLANERA VENEZOLANA" },
+            { s: 7, e: 17, n: "MÚSICA VARIADA" },
+            { s: 17, e: 18, n: "MERENGUES" },
+            { s: 18, e: 19, n: "MÚSICA POP RETRO" },
+            { s: 19, e: 20, n: "BALADAS EN ESPAÑOL POP" },
+            { s: 20, e: 21, n: "BALADAS VENEZOLANAS POP" },
+            { s: 21, e: 22, n: "BALADAS ROCK" },
+            { s: 22, e: 24, n: "BALADAS EN ESPAÑOL POP" }
         ];
 
         async function updateMetadata() {
@@ -161,6 +173,7 @@
                         cover.style.opacity = "1";
                         document.body.style.backgroundImage = `url('${LOGO_RADIO}')`;
                     } else {
+                        // Buscar carátula
                         fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(track)}&limit=1&entity=song`)
                         .then(r => r.json()).then(d => {
                             if (d.results?.[0]) {
@@ -169,6 +182,7 @@
                                 document.body.style.backgroundImage = `url('${img}')`;
                             }
                         });
+                        // Carga forzada de video
                         forceVideoLoad(track);
                     }
                     updateScheduleUI();
@@ -184,13 +198,10 @@
                 if (idMatch && idMatch[1]) {
                     const videoId = idMatch[1];
                     const container = document.getElementById('video-area');
+                    // Inserción limpia de iframe para evitar Error 153
+                    container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
                     
-                    // OPTIMIZACIÓN CLAVE: vq=medium fuerza fluidez en frames
-                    container.innerHTML = `<iframe width="100%" height="100%" 
-                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&vq=medium" 
-                        frameborder="0" allow="autoplay; encrypted-media" style="pointer-events:none;"></iframe>`;
-                    
-                    setTimeout(() => { document.getElementById('cover-img').style.opacity = "0"; }, 6000);
+                    setTimeout(() => { document.getElementById('cover-img').style.opacity = "0"; }, 20000);
                 }
             });
         }
