@@ -43,40 +43,12 @@
         .top-actions { position: absolute; top: 15px; width: calc(100% - 30px); display: flex; justify-content: space-between; left: 15px; z-index: 100; }
         .action-btn { cursor: pointer; font-size: 0.9rem; color: var(--accent); background: var(--bg-player); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
 
-        /* --- CORRECCIÓN DE FLUIDEZ (ACELERACIÓN GPU) --- */
         .album-art { 
-            width: 290px; 
-            height: 185px; 
-            margin: 0 auto 1.2rem; 
-            border-radius: 15px; 
-            background: #000; 
-            box-shadow: 0 12px 25px rgba(0,0,0,0.4); 
-            overflow: hidden; 
-            position: relative; 
-            /* Forzar a Windows a usar la tarjeta de video para esta caja */
-            transform: translate3d(0,0,0);
-            -webkit-transform: translate3d(0,0,0);
-            backface-visibility: hidden;
-            perspective: 1000;
+            width: 290px; height: 185px; margin: 0 auto 1.2rem; border-radius: 15px; background: #000; 
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4); overflow: hidden; position: relative; 
+            transform: translate3d(0,0,0); -webkit-transform: translate3d(0,0,0);
         }
-
-        #video-area { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            z-index: 5; 
-            background: #000; 
-        }
-
-        /* Maximizar rendimiento del iframe */
-        #video-area iframe { 
-            border: 0; 
-            image-rendering: optimizeSpeed;
-            will-change: transform;
-        }
-
+        #video-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; background: #000; }
         #cover-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10; transition: opacity 0.8s ease; pointer-events: none; }
 
         .show-info { background: #444; color: #fff; padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 900; margin-bottom: 10px; display: inline-block; text-transform: uppercase; }
@@ -105,10 +77,7 @@
                 <div class="action-btn" onclick="shareApp()"><i class="fas fa-share-alt"></i></div>
                 <div class="action-btn" onclick="toggleModal('qrModal')"><i class="fas fa-qrcode"></i></div>
             </div>
-            <div class="action-group" style="display:flex; gap:8px;">
-                <div class="action-btn" onclick="toggleModal('privacyModal')"><i class="fas fa-user-shield"></i></div>
-                <div class="action-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="theme-icon"></i></div>
-            </div>
+            <div class="action-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="theme-icon"></i></div>
         </div>
 
         <div style="background: #ff0055; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; margin-bottom: 5px; display: inline-block; margin-top: 0px;">● EN VIVO</div>
@@ -120,7 +89,7 @@
 
         <div class="show-info" id="current-show">CARGANDO...</div>
         <h1 style="color: var(--accent); margin:0; font-size: 1.6rem;">PRIMERA STEREO</h1>
-        <p style="color: #ffffff; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">📻 RADIO VIDEO ONLINE</p>
+        <p style="color: #ffffff; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">📻 RADIO VIDEO ONLINE 📻</p>
 
         <div class="now-playing">
             <div id="track-info">Sincronizando señal...</div>
@@ -146,21 +115,7 @@
             <a href="https://soundcloud.com/primerastereo" target="_blank"><i class="fab fa-soundcloud"></i></a>
             <a href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio" target="_blank"><i class="fab fa-whatsapp"></i></a>
         </div>
-        <div style="font-size: 0.55rem; color: var(--text-slogan); font-weight: bold;">© 2010 - 2026 PRIMERA STEREO<br>Radio Video Online</div>
-    </div>
-
-    <div id="qrModal" style="display:none;" class="modal" onclick="toggleModal('qrModal')">
-        <div style="background:#222; padding:20px; border-radius:20px; text-align:center; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2000;">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://primera-stereo.netlify.app" style="border-radius:10px;">
-        </div>
-    </div>
-
-    <div id="privacyModal" style="display:none;" class="modal" onclick="toggleModal('privacyModal')">
-        <div style="background:#222; color:white; padding:20px; border-radius:20px; width:280px; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2000; text-align:center;">
-            <h3>Sobre Nosotros</h3>
-            <p style="font-size:0.7rem;">PRIMERA STEREO Radio Video Online. Éxitos y melodías inolvidables las 24 horas, desde Venezuela para el mundo.</p>
-            <button onclick="toggleModal('privacyModal')">CERRAR</button>
-        </div>
+        <div style="font-size: 0.55rem; color: var(--text-slogan); font-weight: bold;">© 2010 - 2026 PRIMERA STEREO</div>
     </div>
 
     <script>
@@ -184,12 +139,11 @@
                 if (track !== lastTrack) {
                     lastTrack = track;
                     document.getElementById('track-info').textContent = track;
-                    
-                    const isJingle = track.toUpperCase().includes("PRIMERA STEREO") || track.toUpperCase().includes("JINGLE");
                     const cover = document.getElementById('cover-img');
-
                     cover.style.opacity = "1";
                     document.getElementById('video-area').innerHTML = "";
+
+                    const isJingle = track.toUpperCase().includes("PRIMERA STEREO") || track.toUpperCase().includes("JINGLE");
 
                     if (isJingle) {
                         cover.src = LOGO_RADIO;
@@ -201,8 +155,6 @@
                                 const img = d.results[0].artworkUrl100.replace('100x100', '800x800');
                                 cover.src = img;
                                 document.body.style.backgroundImage = `url('${img}')`;
-                            } else {
-                                cover.src = LOGO_RADIO;
                             }
                         });
                         forceVideoLoad(track);
@@ -213,7 +165,7 @@
         }
 
         function forceVideoLoad(queryText) {
-            const query = encodeURIComponent(queryText + " official video");
+            const query = encodeURIComponent(queryText + " official music video");
             fetch("https://api.codetabs.com/v1/proxy/?quest=" + encodeURIComponent('https://www.youtube.com/results?search_query=' + query))
             .then(r => r.text())
             .then(html => {
@@ -222,17 +174,18 @@
                     const videoId = idMatch[1];
                     const container = document.getElementById('video-area');
                     
-                    /* MEJORA DE FLUIDEZ: 
-                       vq=tiny: Usa la menor carga posible para que el procesador no se trabe.
-                       No se nota por el tamaño del cuadro pero la fluidez sube al 100%.
-                    */
-                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=tiny&enablejsapi=1&widget_referrer=${window.location.origin}`;
+                    /* --- SOLUCIÓN UMPG & FLUIDEZ --- */
+                    // 1. Usamos youtube-nocookie para saltar algunas restricciones de perfil.
+                    // 2. widget_referrer y origin simulan que el video se carga desde una fuente confiable.
+                    // 3. autoplay=1 y mute=1 son obligatorios para el arranque automático.
+                    const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=small&enablejsapi=1&widget_referrer=https://www.youtube.com&origin=https://www.youtube.com`;
                     
-                    container.innerHTML = `<iframe width="100%" height="100%" src="${embedUrl}" allow="autoplay; encrypted-media" style="pointer-events:none;"></iframe>`;
+                    container.innerHTML = `<iframe width="100%" height="100%" src="${embedUrl}" allow="autoplay; encrypted-media" style="pointer-events:none; border:none;"></iframe>`;
                     
+                    // Esperar 6 segundos para asegurar que el video arrancó antes de quitar la carátula
                     setTimeout(() => { 
-                        document.getElementById('cover-img').style.opacity = "0"; 
-                    }, 5000);
+                        if(container.innerHTML !== "") document.getElementById('cover-img').style.opacity = "0"; 
+                    }, 6000);
                 }
             });
         }
